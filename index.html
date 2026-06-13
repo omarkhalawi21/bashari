@@ -368,6 +368,34 @@
   .foot-in .brand{font-size:18px}
   footer .note{font-size:12px;color:var(--faint);max-width:30em}
 
+  /* ---------- demo request modal ---------- */
+  .demo-modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+  .demo-modal.open{display:flex}
+  .dm-backdrop{position:absolute;inset:0;background:rgba(29,20,13,.55);backdrop-filter:blur(6px);animation:dmFade .25s ease}
+  @keyframes dmFade{from{opacity:0}to{opacity:1}}
+  .dm-card{position:relative;z-index:1;width:100%;max-width:470px;background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:34px;max-height:92vh;overflow:auto;animation:dmRise .35s cubic-bezier(.2,.8,.2,1)}
+  @keyframes dmRise{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:none}}
+  .dm-x{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:15px;line-height:1;cursor:pointer;display:grid;place-items:center;transition:background .2s,color .2s}
+  .dm-x:hover{background:#fff8ec;color:var(--ink)}
+  .dm-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--copper);font-weight:500}
+  .dm-card h3{font-size:28px;margin:12px 0 6px}
+  .dm-sub{font-size:14px;color:var(--muted);margin-bottom:22px;line-height:1.5}
+  .dm-form{display:flex;flex-direction:column;gap:13px}
+  .dm-form label{display:block;font-size:12.5px;font-weight:600;color:var(--roast)}
+  .dm-form label span{color:var(--terra)}
+  .dm-form input,.dm-form select{font-family:var(--sans);font-size:14.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:12px 14px;transition:border-color .2s,box-shadow .2s;width:100%;margin-top:6px}
+  .dm-form input::placeholder{color:var(--faint)}
+  .dm-form input:focus,.dm-form select:focus{outline:none;border-color:var(--crema);box-shadow:0 0 0 3px rgba(207,154,87,.18);background:#fffdf7}
+  .dm-form input.err{border-color:var(--terra);box-shadow:0 0 0 3px rgba(185,81,44,.14)}
+  .dm-submit{margin-top:6px;justify-content:center;width:100%;font-size:15.5px;padding:15px}
+  .dm-note{text-align:center;font-size:12px;color:var(--faint);font-family:var(--mono)}
+  .dm-success{text-align:center;padding:22px 6px}
+  .dm-success .ck{width:56px;height:56px;border-radius:50%;background:var(--green-soft);display:grid;place-items:center;margin:0 auto 16px}
+  .dm-success .ck svg{width:26px;height:26px;color:var(--green)}
+  .dm-success h3{font-size:24px;margin-bottom:8px}
+  .dm-success p{font-size:14px;color:var(--muted);max-width:24em;margin:0 auto;line-height:1.55}
+  body.dm-lock{overflow:hidden}
+
   ::selection{background:var(--crema);color:var(--espresso)}
 </style>
 </head>
@@ -811,6 +839,39 @@
     </div>
   </footer>
 
+  <!-- DEMO REQUEST MODAL -->
+  <div class="demo-modal" id="demoModal" aria-hidden="true">
+    <div class="dm-backdrop" data-close></div>
+    <div class="dm-card" role="dialog" aria-modal="true" aria-labelledby="dmTitle">
+      <button class="dm-x" data-close aria-label="Close">✕</button>
+      <div id="dmBody">
+        <div class="dm-eyebrow">Get a personalized walkthrough</div>
+        <h3 id="dmTitle">Get your free demo</h3>
+        <p class="dm-sub">Tell us about your team and a Bashari specialist will reach out within one business day.</p>
+        <form id="demoForm" class="dm-form" novalidate>
+          <label>Name <span>*</span><input name="name" required autocomplete="name" placeholder="Your name" /></label>
+          <label>Company <span>*</span><input name="company" required autocomplete="organization" placeholder="Your coffee business" /></label>
+          <label>Work email <span>*</span><input name="email" type="email" required autocomplete="email" placeholder="you@company.com" /></label>
+          <label>Phone number <span>*</span><input name="phone" type="tel" required autocomplete="tel" placeholder="+966 5X XXX XXXX" /></label>
+          <label>Number of employees
+            <select name="size">
+              <option value="">Select…</option>
+              <option>1–10</option><option>11–25</option><option>26–50</option><option>51–100</option><option>100+</option>
+            </select>
+          </label>
+          <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
+          <button class="btn btn-primary dm-submit" type="submit">Get free demo</button>
+          <div class="dm-note">No credit card required.</div>
+        </form>
+      </div>
+      <div id="dmDone" class="dm-success" hidden>
+        <div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg></div>
+        <h3>Thanks — we'll be in touch.</h3>
+        <p>A Bashari specialist will reach out within one business day to set up your walkthrough.</p>
+      </div>
+    </div>
+  </div>
+
 <script>
   // sticky nav shadow
   const nav = document.getElementById('nav');
@@ -871,6 +932,84 @@
     es.forEach(e => { if (e.isIntersecting && !started) { started = true; show(0); } });
   }, { threshold: 0.3 });
   demoIO.observe(document.getElementById('demo'));
+
+  // ---------- demo request modal ----------
+  const dmModal = document.getElementById('demoModal');
+  const dmForm  = document.getElementById('demoForm');
+  const dmBody  = document.getElementById('dmBody');
+  const dmDone  = document.getElementById('dmDone');
+
+  function openDemo() {
+    dmModal.classList.add('open');
+    document.body.classList.add('dm-lock');
+    dmBody.hidden = false; dmDone.hidden = true;
+    dmForm.reset();
+    dmForm.querySelectorAll('.err').forEach(el => el.classList.remove('err'));
+    setTimeout(() => dmForm.querySelector('input')?.focus(), 60);
+  }
+  function closeDemo() {
+    dmModal.classList.remove('open');
+    document.body.classList.remove('dm-lock');
+  }
+
+  // any "Book a demo" button opens the modal
+  document.querySelectorAll('a.btn').forEach(a => {
+    if (a.textContent.trim().startsWith('Book a demo')) {
+      a.addEventListener('click', e => { e.preventDefault(); openDemo(); });
+    }
+  });
+  dmModal.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeDemo));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && dmModal.classList.contains('open')) closeDemo(); });
+
+  dmForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // honeypot: bots fill the hidden "website" field — silently "succeed"
+    if (dmForm.website.value.trim()) { dmBody.hidden = true; dmDone.hidden = false; return; }
+    let ok = true;
+    ['name','company','email','phone'].forEach(n => {
+      const f = dmForm.elements[n];
+      const bad = !f.value.trim() || (n === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value));
+      f.classList.toggle('err', bad);
+      if (bad) ok = false;
+    });
+    if (!ok) return;
+    const btn = dmForm.querySelector('.dm-submit');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    const payload = {
+      name: dmForm.name.value.trim(), company: dmForm.company.value.trim(),
+      email: dmForm.email.value.trim(), phone: dmForm.phone.value.trim(),
+      employees: dmForm.size.value || null,
+    };
+    try {
+      await submitDemo(payload);
+      dmBody.hidden = true; dmDone.hidden = false;
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Get free demo';
+      alert('Something went wrong — please email hello@bashari.co and we\'ll set it up.');
+    }
+  });
+
+  // Submission target — Web3Forms (https://web3forms.com). Submissions are
+  // emailed to the address the access key below is registered to.
+  const WEB3FORMS_KEY = 'b23077a3-b972-4222-85c6-dfef58ad53c0';
+  async function submitDemo(payload) {
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        subject: `New Bashari demo request — ${payload.company || payload.name}`,
+        from_name: 'Bashari website',
+        Name: payload.name,
+        Company: payload.company,
+        Email: payload.email,
+        Phone: payload.phone,
+        Employees: payload.employees || '—',
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!data.success) throw new Error(data.message || 'submit failed');
+  }
 </script>
 </body>
 </html>
