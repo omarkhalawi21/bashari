@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bashari — the operating system for multi-branch coffee</title>
+<meta name="description" content="Bashari runs the people, payroll, inventory and daily operations behind every coffee bar. Built for roasteries, cafés and bakeries that run more than one branch." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --espresso:#1d140d;
+    --bean:#2a1b10;
+    --roast:#3a2417;
+    --crema:#cf9a57;
+    --crema-deep:#b87a36;
+    --copper:#a85f29;
+    --cream:#f1e5d0;
+    --paper:#f8f1e3;
+    --card:#fffaf0;
+    --ink:#2a1f16;
+    --muted:#8c7a64;
+    --faint:#b6a387;
+    --line:#e7d8be;
+    --line-soft:#efe4cf;
+    --green:#4f7d5e;
+    --green-soft:#e2efe2;
+    --green-ink:#2f5a3e;
+    --terra:#b9512c;
+    --terra-soft:#f7e3da;
+    --amber:#c98a2b;
+    --amber-soft:#f6e9cf;
+    --blue:#3f6587;
+    --blue-soft:#e1ebf2;
+    --shadow:32px 40px 80px -32px rgba(45,28,12,.45);
+    --shadow-sm:0 2px 8px -2px rgba(45,28,12,.18);
+    --r:18px;
+    --serif:'Fraunces',Georgia,serif;
+    --sans:'Hanken Grotesk',-apple-system,sans-serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans);
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* paper grain + warm glow atmosphere */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+    opacity:.05;mix-blend-mode:multiply;
+  }
+  .glow{position:fixed;border-radius:50%;filter:blur(90px);z-index:0;pointer-events:none;opacity:.55}
+  .glow.g1{width:520px;height:520px;background:radial-gradient(circle,#e7b878,transparent 70%);top:-160px;right:-120px}
+  .glow.g2{width:480px;height:480px;background:radial-gradient(circle,#cf9a57,transparent 70%);top:38%;left:-200px;opacity:.3}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+  section{position:relative;z-index:1}
+
+  a{color:inherit;text-decoration:none}
+  .mono{font-family:var(--mono)}
+  .eyebrow{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--copper);font-weight:500;display:inline-flex;align-items:center;gap:9px;
+  }
+  .eyebrow::before{content:"";width:22px;height:1.5px;background:var(--copper);display:inline-block}
+
+  h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.04;letter-spacing:-.02em;color:var(--espresso)}
+  .serif-italic{font-style:italic;font-weight:500}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;font-family:var(--sans);font-weight:600;
+    font-size:15px;padding:14px 24px;border-radius:100px;cursor:pointer;border:1.5px solid transparent;
+    transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,background .2s;white-space:nowrap;
+  }
+  .btn-primary{background:var(--espresso);color:#f7ecd9;box-shadow:0 14px 30px -12px rgba(29,20,13,.7)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 20px 40px -14px rgba(29,20,13,.75)}
+  .btn-ghost{background:transparent;color:var(--espresso);border-color:var(--line)}
+  .btn-ghost:hover{background:#fff8ec;border-color:var(--crema);transform:translateY(-2px)}
+  .btn svg{width:17px;height:17px}
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(248,241,227,.78);border-bottom:1px solid transparent;transition:border-color .3s,background .3s;
+  }
+  header.nav.scrolled{border-color:var(--line);background:rgba(248,241,227,.9)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--serif);font-weight:700;font-size:22px;color:var(--espresso);letter-spacing:-.02em}
+  .brand .mark{
+    width:34px;height:34px;border-radius:10px;background:linear-gradient(150deg,var(--roast),var(--bean));
+    display:grid;place-items:center;box-shadow:inset 0 1px 1px rgba(255,255,255,.12),0 6px 14px -6px rgba(29,20,13,.6);position:relative;
+  }
+  .brand .mark::after{content:"";position:absolute;inset:0;border-radius:10px;border:1px solid rgba(207,154,87,.35)}
+  .brand .mark svg{width:19px;height:19px}
+  .nav-links{display:flex;align-items:center;gap:34px}
+  .nav-links a{font-size:14.5px;font-weight:500;color:var(--ink);opacity:.8;transition:opacity .2s}
+  .nav-links a:hover{opacity:1}
+  .nav-cta{display:flex;align-items:center;gap:14px}
+  @media(max-width:880px){.nav-links{display:none}.nav-cta .btn-ghost{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{padding:78px 0 40px;position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  @media(max-width:980px){.hero-grid{grid-template-columns:1fr;gap:40px}}
+  .hero h1{font-size:clamp(44px,6vw,76px);margin:22px 0 0}
+  .hero h1 .lead{color:var(--copper)}
+  .hero p.sub{font-size:19px;color:#5c4c3b;max-width:30em;margin:24px 0 32px;line-height:1.55}
+  .hero-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .hero-meta{display:flex;gap:26px;margin-top:34px;flex-wrap:wrap}
+  .hero-meta .m{display:flex;flex-direction:column;gap:2px}
+  .hero-meta .m b{font-family:var(--serif);font-size:26px;color:var(--espresso);font-weight:600}
+  .hero-meta .m span{font-size:12.5px;color:var(--muted);font-weight:500}
+
+  /* hero visual: stacked phone + dashboard card */
+  .hero-visual{position:relative;height:480px}
+  @media(max-width:980px){.hero-visual{height:420px}}
+  .float{position:absolute;border-radius:22px;background:var(--card);box-shadow:var(--shadow);border:1px solid var(--line-soft);overflow:hidden}
+  .hv-dash{width:108%;left:-4%;top:18px;animation:floaty 7s ease-in-out infinite}
+  .hv-phone{width:188px;right:-6px;bottom:-6px;border-radius:30px;animation:floaty 7s ease-in-out infinite .8s;border:7px solid #241710;background:#241710;padding:0}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+  /* ---------- reveal ---------- */
+  .rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+  .rv.in{opacity:1;transform:none}
+  .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+  .hero .anim{opacity:0;animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards}
+  .hero .a1{animation-delay:.05s}.hero .a2{animation-delay:.18s}.hero .a3{animation-delay:.31s}.hero .a4{animation-delay:.44s}.hero .a5{animation-delay:.57s}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .hero .anim{transform:translateY(20px)}
+
+  /* ---------- marquee trust ---------- */
+  .trust{padding:30px 0 8px}
+  .trust-line{display:flex;align-items:center;gap:14px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:13.5px}
+  .trust-line .dot{width:5px;height:5px;border-radius:50%;background:var(--crema)}
+  .trust-badges{display:flex;gap:30px;justify-content:center;flex-wrap:wrap;margin-top:18px;opacity:.7}
+  .trust-badges span{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--roast)}
+
+  /* ---------- section heads ---------- */
+  .sec{padding:88px 0}
+  .sec-head{max-width:660px;margin-bottom:48px}
+  .sec-head.center{margin:0 auto 52px;text-align:center}
+  .sec-head h2{font-size:clamp(32px,4.4vw,50px);margin:18px 0 0}
+  .sec-head p{font-size:17.5px;color:#5c4c3b;margin-top:16px}
+
+  /* ---------- DEMO ---------- */
+  .demo{padding:34px 0 70px}
+  .demo-window{
+    border-radius:22px;background:var(--card);box-shadow:var(--shadow);border:1px solid var(--line-soft);
+    overflow:hidden;max-width:1080px;margin:0 auto;
+  }
+  .demo-bar{display:flex;align-items:center;gap:8px;padding:13px 18px;background:#f3e9d6;border-bottom:1px solid var(--line)}
+  .demo-bar .dots{display:flex;gap:7px}
+  .demo-bar .dots i{width:11px;height:11px;border-radius:50%;display:block}
+  .demo-bar .dots i:nth-child(1){background:#e0795f}.demo-bar .dots i:nth-child(2){background:#e6b455}.demo-bar .dots i:nth-child(3){background:#74b07a}
+  .demo-url{flex:1;text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);background:#fff8ec;border:1px solid var(--line);border-radius:8px;padding:5px 12px;max-width:340px;margin:0 auto}
+  .demo-url b{color:var(--roast);font-weight:500}
+
+  .demo-app{display:grid;grid-template-columns:208px 1fr;min-height:520px;background:var(--paper)}
+  @media(max-width:760px){.demo-app{grid-template-columns:1fr}}
+  .demo-side{background:linear-gradient(180deg,var(--bean),var(--espresso));padding:18px 12px;color:#e7d6bf}
+  @media(max-width:760px){.demo-side{display:none}}
+  .demo-side .sb-brand{display:flex;align-items:center;gap:9px;padding:6px 10px 18px;font-family:var(--serif);font-weight:700;font-size:18px;color:#f6e9d2}
+  .demo-side .sb-brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(150deg,var(--crema),var(--copper));display:grid;place-items:center}
+  .demo-side .sb-brand .mark svg{width:14px;height:14px}
+  .sb-group{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#a08a6c;padding:14px 12px 7px}
+  .sb-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;font-size:13.5px;font-weight:500;color:#cdb79c;cursor:pointer;transition:background .2s,color .2s;border:none;background:none;width:100%;text-align:left;font-family:var(--sans)}
+  .sb-item:hover{background:rgba(255,255,255,.05);color:#f1e3cb}
+  .sb-item.active{background:rgba(207,154,87,.18);color:#fbeed6}
+  .sb-item .ic{width:16px;height:16px;flex-shrink:0;opacity:.85}
+  .sb-item.dim{opacity:.5;cursor:default}
+  .sb-item.dim:hover{background:none;color:#cdb79c}
+  .sb-item .tag{margin-left:auto;font-family:var(--mono);font-size:10px;background:var(--green);color:#eafff0;padding:1px 6px;border-radius:20px}
+
+  .demo-stage{position:relative;overflow:hidden}
+  /* mobile tab rail */
+  .demo-tabs{display:none;gap:7px;padding:12px 14px;overflow-x:auto;background:var(--bean);border-bottom:1px solid rgba(255,255,255,.06)}
+  @media(max-width:760px){.demo-tabs{display:flex}}
+  .demo-tabs button{white-space:nowrap;font-size:12.5px;font-weight:600;color:#cdb79c;background:rgba(255,255,255,.06);border:none;padding:7px 14px;border-radius:20px;font-family:var(--sans)}
+  .demo-tabs button.active{background:var(--crema);color:#3a2417}
+
+  .screen{display:none;padding:24px 26px;animation:scin .5s ease}
+  .screen.active{display:block}
+  @keyframes scin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media(max-width:760px){.screen{padding:18px 16px}}
+
+  .scr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+  .scr-top h3{font-size:23px}
+  .scr-top .sub{font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+  .scr-search{font-size:12px;color:var(--faint);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;display:flex;align-items:center;gap:7px}
+
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  @media(max-width:620px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  .tile{background:var(--card);border:1px solid var(--line-soft);border-radius:14px;padding:14px 15px}
+  .tile .lbl{font-size:11.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px}
+  .tile .val{font-family:var(--serif);font-size:30px;font-weight:600;color:var(--espresso);margin-top:5px;line-height:1}
+  .tile .trend{font-size:11px;font-family:var(--mono);margin-top:6px;color:var(--green)}
+  .tile .trend.down{color:var(--terra)}
+  .tile .ic{width:15px;height:15px;color:var(--crema-deep)}
+
+  .cols{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}
+  @media(max-width:680px){.cols{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line-soft);border-radius:14px;padding:16px}
+  .panel h4{font-family:var(--sans);font-size:13px;font-weight:700;color:var(--roast);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .panel h4 .more{font-family:var(--mono);font-size:10.5px;color:var(--crema-deep);font-weight:500}
+
+  .row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+  .row:last-child{border-bottom:none}
+  .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;font-family:var(--sans)}
+  .row .nm{font-size:13px;font-weight:600;color:var(--ink)}
+  .row .meta{font-size:11px;color:var(--muted)}
+  .row .right{margin-left:auto;text-align:right}
+  .badge{font-family:var(--mono);font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;display:inline-block}
+  .b-green{background:var(--green-soft);color:var(--green-ink)}
+  .b-amber{background:var(--amber-soft);color:#8a5e15}
+  .b-terra{background:var(--terra-soft);color:#8c3a1d}
+  .b-blue{background:var(--blue-soft);color:#2f4d68}
+  .b-slate{background:#ece3d4;color:#6b5b46}
+
+  .alert{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:10px;margin-bottom:8px;background:var(--paper);border:1px solid var(--line-soft)}
+  .alert .ai{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex-shrink:0}
+  .alert .at{font-size:12.5px;font-weight:600;color:var(--ink)}
+  .alert .am{font-size:11px;color:var(--muted)}
+
+  /* table */
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .tbl th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:10px;border-bottom:1px solid var(--line-soft);color:var(--ink)}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td.num{font-family:var(--mono);text-align:right}
+  .tbl .emp{display:flex;align-items:center;gap:9px;font-weight:600}
+  .ot{color:var(--green-ink);background:var(--green-soft);padding:2px 7px;border-radius:6px;font-family:var(--mono)}
+
+  /* clock in card */
+  .clockcard{background:linear-gradient(150deg,#fff8ea,#fbeed3);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px;flex-wrap:wrap}
+  .clockcard .bigtime{font-family:var(--mono);font-size:38px;font-weight:700;color:var(--espresso);line-height:1}
+  .clockcard .cstat{font-size:12px;color:var(--green-ink);font-weight:600;margin-top:6px;display:flex;align-items:center;gap:6px}
+  .branch-pill{font-family:var(--mono);font-size:11px;background:var(--card);border:1px solid var(--line);padding:5px 11px;border-radius:20px;color:var(--roast);display:inline-flex;gap:6px;align-items:center}
+  .clockbtn{background:var(--green);color:#eafff0;border:none;border-radius:12px;padding:14px 26px;font-weight:700;font-size:15px;font-family:var(--sans);box-shadow:0 10px 22px -10px rgba(79,125,94,.8)}
+
+  /* kanban */
+  .kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+  @media(max-width:680px){.kanban{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:430px){.kanban{grid-template-columns:1fr}}
+  .kcol .khead{font-size:11.5px;font-weight:700;color:var(--roast);display:flex;align-items:center;gap:7px;margin-bottom:9px;font-family:var(--sans)}
+  .kcol .kcount{font-family:var(--mono);font-size:10px;background:#ece3d4;color:#6b5b46;padding:1px 7px;border-radius:20px}
+  .kcard{background:var(--card);border:1px solid var(--line-soft);border-radius:11px;padding:11px;margin-bottom:9px;box-shadow:var(--shadow-sm)}
+  .kcard .kn{font-size:12.5px;font-weight:700;color:var(--ink)}
+  .kcard .kr{font-size:11px;color:var(--copper);font-weight:600;margin-top:1px}
+  .kcard .kmeta{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10px;color:var(--muted)}
+  .kcard .cv{font-family:var(--mono);font-size:9.5px;background:var(--paper);border:1px solid var(--line);padding:2px 6px;border-radius:5px;color:var(--roast)}
+
+  /* receipt ocr */
+  .ocr-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:14px}
+  @media(max-width:620px){.ocr-grid{grid-template-columns:1fr}}
+  .receipt{background:repeating-linear-gradient(#fffdf7,#fffdf7 22px,#f6efe0 23px);border:1px solid var(--line);border-radius:12px;padding:16px;font-family:var(--mono);font-size:10.5px;color:#6b5b46;position:relative;min-height:180px}
+  .receipt .rtitle{font-weight:700;color:var(--roast);font-size:12px;text-align:center;margin-bottom:10px;letter-spacing:.05em}
+  .receipt .rline{display:flex;justify-content:space-between;padding:2px 0}
+  .ai-chip{position:absolute;top:-9px;right:12px;background:var(--espresso);color:#f7ecd9;font-family:var(--mono);font-size:9.5px;padding:4px 9px;border-radius:20px;display:flex;align-items:center;gap:5px;box-shadow:var(--shadow-sm)}
+  .ai-chip .pulse{width:6px;height:6px;border-radius:50%;background:var(--crema);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .extracted .xf{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px}
+  .extracted .xf:last-child{border-bottom:none}
+  .extracted .xl{color:var(--muted);font-size:11.5px}
+  .extracted .xv{font-weight:600;color:var(--ink);font-family:var(--mono)}
+
+  /* count list */
+  .countrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+  .countrow:last-child{border-bottom:none}
+  .countrow .cn{font-size:13px;font-weight:600;flex:1}
+  .countrow .par{font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+  .qty{font-family:var(--mono);font-size:14px;font-weight:700;width:54px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:5px 0;color:var(--espresso)}
+
+  .demo-progress{height:3px;background:var(--line);position:relative;overflow:hidden}
+  .demo-progress i{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,var(--crema),var(--copper))}
+  .demo-progress i.run{animation:fill var(--dur,5s) linear forwards}
+  @keyframes fill{from{width:0}to{width:100%}}
+
+  .demo-foot{text-align:center;margin-top:22px;color:var(--muted);font-size:13.5px}
+
+  /* ---------- pillars ---------- */
+  .pillars{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  @media(max-width:820px){.pillars{grid-template-columns:1fr}}
+  .pillar{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:30px;position:relative;overflow:hidden;transition:transform .3s,box-shadow .3s}
+  .pillar:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+  .pillar .pic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(150deg,var(--roast),var(--bean));margin-bottom:18px}
+  .pillar .pic svg{width:22px;height:22px;color:var(--crema)}
+  .pillar h3{font-size:24px;margin-bottom:10px}
+  .pillar p{color:#5c4c3b;font-size:15px;margin-bottom:16px}
+  .pillar ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+  .pillar ul li{font-size:12px;font-weight:500;color:var(--roast);background:var(--paper);border:1px solid var(--line-soft);padding:5px 11px;border-radius:20px}
+  .pillar .num{position:absolute;top:20px;right:26px;font-family:var(--serif);font-size:48px;color:var(--line);font-weight:600;line-height:1}
+
+  /* ---------- feature grid ---------- */
+  .fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  @media(max-width:820px){.fgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.fgrid{grid-template-columns:1fr}}
+  .fcell{background:var(--card);padding:22px;transition:background .25s}
+  .fcell:hover{background:#fffdf6}
+  .fcell .fi{width:18px;height:18px;color:var(--copper);margin-bottom:12px}
+  .fcell h4{font-family:var(--sans);font-weight:700;font-size:14.5px;color:var(--espresso);margin-bottom:5px}
+  .fcell p{font-size:12.5px;color:var(--muted);line-height:1.5}
+
+  /* ---------- coffee strip ---------- */
+  .coffee{background:linear-gradient(160deg,var(--bean),var(--espresso));color:#ecdcc2;border-radius:26px;padding:56px 48px;position:relative;overflow:hidden}
+  @media(max-width:680px){.coffee{padding:40px 26px}}
+  .coffee::after{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(207,154,87,.28),transparent 70%);top:-160px;right:-120px}
+  .coffee .eyebrow{color:var(--crema)}
+  .coffee .eyebrow::before{background:var(--crema)}
+  .coffee h2{color:#fbf0dc;font-size:clamp(30px,4vw,46px);margin:18px 0 16px;max-width:14em}
+  .coffee p{color:#cbb79b;font-size:17px;max-width:34em;position:relative}
+  .coffee-terms{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;position:relative}
+  .coffee-terms span{font-size:13px;font-family:var(--mono);color:#e7d6bf;background:rgba(255,255,255,.06);border:1px solid rgba(207,154,87,.25);padding:7px 14px;border-radius:20px}
+
+  /* ---------- differentiators ---------- */
+  .diffs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:820px){.diffs{grid-template-columns:1fr}}
+  .diff{padding:26px;border-radius:var(--r);background:var(--card);border:1px solid var(--line-soft)}
+  .diff .di{width:38px;height:38px;border-radius:11px;background:var(--paper);border:1px solid var(--line);display:grid;place-items:center;margin-bottom:14px}
+  .diff .di svg{width:19px;height:19px;color:var(--copper)}
+  .diff h4{font-family:var(--sans);font-weight:700;font-size:16px;color:var(--espresso);margin-bottom:7px}
+  .diff p{font-size:13.5px;color:#5c4c3b}
+
+  /* ---------- pricing ---------- */
+  .price{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
+  @media(max-width:820px){.price{grid-template-columns:1fr;max-width:420px;margin:0 auto}}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:30px;display:flex;flex-direction:column}
+  .pcard.feat{background:linear-gradient(165deg,#fff9ee,#fbeed3);border-color:var(--crema);box-shadow:var(--shadow);position:relative}
+  .pcard .tier{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--copper);font-weight:500}
+  .pcard .amt{font-family:var(--serif);font-size:42px;font-weight:600;color:var(--espresso);margin:12px 0 2px;line-height:1}
+  .pcard .amt small{font-size:15px;color:var(--muted);font-family:var(--sans);font-weight:500}
+  .pcard .pdesc{font-size:13.5px;color:var(--muted);margin-bottom:18px;min-height:38px}
+  .pcard ul{list-style:none;flex:1;margin-bottom:22px}
+  .pcard ul li{font-size:13.5px;color:var(--ink);padding:7px 0;display:flex;gap:9px;align-items:flex-start;border-bottom:1px solid var(--line-soft)}
+  .pcard ul li svg{width:15px;height:15px;color:var(--green);flex-shrink:0;margin-top:2px}
+  .pcard .ribbon{position:absolute;top:18px;right:18px;font-family:var(--mono);font-size:10px;background:var(--espresso);color:#f7ecd9;padding:4px 10px;border-radius:20px}
+  .price-solo{max-width:560px;margin:0 auto}
+  .psolo{text-align:center}
+  .psolo .amt{font-size:54px;margin-top:14px}
+  .psolo .pdesc{min-height:0;margin-bottom:22px}
+  .psolo ul{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;text-align:left;margin-bottom:24px}
+  @media(max-width:520px){.psolo ul{grid-template-columns:1fr}}
+  .psolo-note{font-size:12.5px;color:var(--muted);font-family:var(--mono);margin-top:16px}
+
+  /* ---------- final cta ---------- */
+  .finale{text-align:center;padding:30px 0 90px}
+  .finale-card{background:linear-gradient(160deg,var(--bean),var(--espresso));border-radius:30px;padding:72px 40px;position:relative;overflow:hidden}
+  .finale-card::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(207,154,87,.22),transparent 70%);top:-50%;left:50%;transform:translateX(-50%)}
+  .finale-card h2{color:#fbf0dc;font-size:clamp(34px,5vw,58px);position:relative;margin-bottom:18px}
+  .finale-card p{color:#cbb79b;font-size:18px;max-width:30em;margin:0 auto 32px;position:relative}
+  .finale-card .hero-cta{justify-content:center;position:relative}
+  .finale-card .btn-primary{background:var(--crema);color:#3a2417}
+  .finale-card .btn-ghost{border-color:rgba(207,154,87,.4);color:#ecdcc2}
+  .finale-card .btn-ghost:hover{background:rgba(255,255,255,.06)}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding:44px 0;color:var(--muted);font-size:13.5px}
+  .foot-in{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .foot-in .brand{font-size:18px}
+  footer .note{font-size:12px;color:var(--faint);max-width:30em}
+
+  ::selection{background:var(--crema);color:var(--espresso)}
+</style>
+</head>
+<body>
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+
+  <!-- NAV -->
+  <header class="nav" id="nav">
+    <div class="wrap nav-in">
+      <a class="brand" href="#top">
+        <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#cf9a57" stroke-width="2" stroke-linecap="round"><path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M17 9h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M8 2c0 1.5-1 1.5-1 3M12 2c0 1.5-1 1.5-1 3"/></svg></span>
+        Bashari
+      </a>
+      <nav class="nav-links">
+        <a href="#demo">Product tour</a>
+        <a href="#features">Features</a>
+        <a href="#coffee">Built for coffee</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="#demo">Watch the tour</a>
+        <a class="btn btn-primary" href="#contact">Book a demo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow anim a1">Operations OS for multi-branch coffee</span>
+        <h1 class="anim a2">Everything <span class="serif-italic lead">behind the counter</span>, in one place.</h1>
+        <p class="sub anim a3">Bashari runs the people, payroll, inventory and daily routines of every café, roastery and bakery you operate — from clock-in to closing count, on one link that works on any phone.</p>
+        <div class="hero-cta anim a4">
+          <a class="btn btn-primary" href="#demo">Take the 60-second tour
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></svg></a>
+          <a class="btn btn-ghost" href="#contact">Book a live demo</a>
+        </div>
+        <div class="hero-meta anim a5">
+          <div class="m"><b>1 link</b><span>No installs, no app store</span></div>
+          <div class="m"><b>EN · عربي</b><span>Bilingual, right-to-left</span></div>
+          <div class="m"><b>20+</b><span>modules, one login</span></div>
+        </div>
+      </div>
+      <div class="hero-visual anim a3">
+        <!-- mini dashboard card -->
+        <div class="float hv-dash">
+          <div style="background:#f3e9d6;padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px">
+            <span style="width:9px;height:9px;border-radius:50%;background:#e0795f"></span>
+            <span style="width:9px;height:9px;border-radius:50%;background:#e6b455"></span>
+            <span style="width:9px;height:9px;border-radius:50%;background:#74b07a"></span>
+            <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted)">app.bashari.co</span>
+          </div>
+          <div style="padding:18px">
+            <div style="font-family:var(--serif);font-size:18px;color:var(--espresso);font-weight:600">Good morning, Omar ☕</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;font-family:var(--mono)">Saturday · 3 branches live</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">
+              <div style="background:var(--paper);border:1px solid var(--line-soft);border-radius:11px;padding:11px"><div style="font-size:10px;color:var(--muted)">On shift</div><div style="font-family:var(--serif);font-size:24px;color:var(--espresso);font-weight:600">18</div></div>
+              <div style="background:var(--paper);border:1px solid var(--line-soft);border-radius:11px;padding:11px"><div style="font-size:10px;color:var(--muted)">On leave</div><div style="font-family:var(--serif);font-size:24px;color:var(--espresso);font-weight:600">3</div></div>
+              <div style="background:var(--green-soft);border:1px solid #cde3cd;border-radius:11px;padding:11px"><div style="font-size:10px;color:var(--green-ink)">Approvals</div><div style="font-family:var(--serif);font-size:24px;color:var(--green-ink);font-weight:600">2</div></div>
+            </div>
+            <div style="margin-top:13px;display:flex;align-items:center;gap:9px;padding:9px;background:var(--paper);border-radius:10px;border:1px solid var(--line-soft)">
+              <span style="width:26px;height:26px;border-radius:50%;background:#9c6b3f;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700">SA</span>
+              <div><div style="font-size:11.5px;font-weight:600">Sara A. clocked in</div><div style="font-size:10px;color:var(--muted)">Khobar · 7:58 AM</div></div>
+              <span class="badge b-green" style="margin-left:auto">On time</span>
+            </div>
+          </div>
+        </div>
+        <!-- phone clock-in -->
+        <div class="float hv-phone">
+          <div style="background:#fffaf0;border-radius:23px;overflow:hidden;height:300px;display:flex;flex-direction:column">
+            <div style="background:linear-gradient(160deg,var(--bean),var(--espresso));padding:16px 15px 22px;color:#ecdcc2">
+              <div style="font-size:10px;font-family:var(--mono);opacity:.7">RAYYAN BRANCH</div>
+              <div style="font-family:var(--mono);font-size:30px;font-weight:700;margin-top:4px">07:58</div>
+              <div style="font-size:11px;opacity:.8;margin-top:2px">Tap to clock in</div>
+            </div>
+            <div style="padding:14px;flex:1">
+              <button style="width:100%;background:var(--green);color:#eafff0;border:none;border-radius:12px;padding:13px;font-weight:700;font-size:14px;font-family:var(--sans)">● Clock in</button>
+              <div style="margin-top:13px;font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">Today</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green)"></span>Opening checklist <span style="margin-left:auto;color:var(--green-ink);font-family:var(--mono);font-size:10px">4/4</span></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:11.5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--amber)"></span>Daily milk count <span style="margin-left:auto;color:var(--muted);font-family:var(--mono);font-size:10px">2/6</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section class="trust">
+    <div class="wrap">
+      <div class="trust-line">
+        <span>Proven in production at a multi-branch Saudi specialty roastery</span>
+        <span class="dot"></span>
+        <span>running people, payroll &amp; daily ops across every café</span>
+      </div>
+      <div class="trust-badges">
+        <span>Cafés</span><span>Roasteries</span><span>Bakeries</span><span>Drive-thrus</span><span>Multi-branch groups</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section class="sec demo" id="demo">
+    <div class="wrap">
+      <div class="sec-head center rv">
+        <span class="eyebrow" style="justify-content:center">A tour through the product</span>
+        <h2>See exactly how a shift runs on Bashari</h2>
+        <p>Real screens from the platform — click through, or let it play. Everything below is one login your whole team already knows how to use.</p>
+      </div>
+
+      <div class="demo-window rv d1">
+        <div class="demo-bar">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <div class="demo-url">app.bashari.co<b id="demoPath">/#/dashboard</b></div>
+        </div>
+
+        <!-- mobile tabs -->
+        <div class="demo-tabs" id="demoTabs"></div>
+
+        <div class="demo-app">
+          <!-- sidebar -->
+          <aside class="demo-side">
+            <div class="sb-brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#3a2417" stroke-width="2" stroke-linecap="round"><path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M17 9h2a2.5 2.5 0 0 1 0 5h-2"/></svg></span>Bashari</div>
+            <div class="sb-group">Main</div>
+            <button class="sb-item" data-go="dashboard"><span class="ic">▦</span>Dashboard</button>
+            <button class="sb-item" data-go="attendance"><span class="ic">◷</span>Attendance</button>
+            <button class="sb-item dim"><span class="ic">▤</span>Leave</button>
+            <button class="sb-item" data-go="payroll"><span class="ic">▭</span>Payroll</button>
+            <div class="sb-group">People</div>
+            <button class="sb-item" data-go="hiring"><span class="ic">✦</span>Hiring<span class="tag">3 new</span></button>
+            <button class="sb-item dim"><span class="ic">▥</span>Warnings</button>
+            <div class="sb-group">Operations</div>
+            <button class="sb-item" data-go="counts"><span class="ic">▦</span>Daily count</button>
+            <button class="sb-item" data-go="receipts"><span class="ic">▣</span>Receipts</button>
+            <button class="sb-item dim"><span class="ic">▤</span>Inventory</button>
+          </aside>
+
+          <!-- stage -->
+          <div class="demo-stage">
+            <!-- DASHBOARD -->
+            <div class="screen active" data-screen="dashboard">
+              <div class="scr-top"><div><h3>Good morning, Omar</h3><div class="sub">SATURDAY 13 JUN · 3 BRANCHES LIVE</div></div><div class="scr-search">⌕ Search anything</div></div>
+              <div class="tiles">
+                <div class="tile"><div class="lbl">On shift now</div><div class="val">18</div><div class="trend">▲ all branches open</div></div>
+                <div class="tile"><div class="lbl">On leave today</div><div class="val">3</div><div class="trend down">2 approved · 1 pending</div></div>
+                <div class="tile"><div class="lbl">Open tasks</div><div class="val">7</div><div class="trend">▲ 4 due today</div></div>
+                <div class="tile"><div class="lbl">Approvals</div><div class="val">2</div><div class="trend">waiting on you</div></div>
+              </div>
+              <div class="cols">
+                <div class="panel">
+                  <h4>Today's attendance <span class="more">View all →</span></h4>
+                  <div class="row"><span class="av" style="background:#9c6b3f">SA</span><div><div class="nm">Sara Al-Otaibi</div><div class="meta">Khobar · Barista</div></div><div class="right"><div class="badge b-green">On time</div><div class="meta" style="margin-top:3px">7:58 AM</div></div></div>
+                  <div class="row"><span class="av" style="background:#5b7d8c">MK</span><div><div class="nm">Majed Khan</div><div class="meta">Rayyan · Head barista</div></div><div class="right"><div class="badge b-green">On time</div><div class="meta" style="margin-top:3px">7:55 AM</div></div></div>
+                  <div class="row"><span class="av" style="background:#8c5b6f">NF</span><div><div class="nm">Noura Faisal</div><div class="meta">Faisaliyah · Barista</div></div><div class="right"><div class="badge b-amber">Late · 12m</div><div class="meta" style="margin-top:3px">8:12 AM</div></div></div>
+                  <div class="row"><span class="av" style="background:#6b8c5b">YR</span><div><div class="nm">Yousef Rashed</div><div class="meta">Roastery · Roaster</div></div><div class="right"><div class="badge b-green">On time</div><div class="meta" style="margin-top:3px">6:30 AM</div></div></div>
+                </div>
+                <div class="panel">
+                  <h4>Needs your attention</h4>
+                  <div class="alert"><span class="ai b-amber" style="display:grid">◷</span><div><div class="at">Leave request — Majed</div><div class="am">2 days, starts Thu · awaiting approval</div></div></div>
+                  <div class="alert"><span class="ai b-blue" style="display:grid">$</span><div><div class="at">Salary advance — Noura</div><div class="am">SAR 800 requested</div></div></div>
+                  <div class="alert"><span class="ai b-terra" style="display:grid">!</span><div><div class="at">Expiry check overdue</div><div class="am">Faisaliyah fridge · due yesterday</div></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ATTENDANCE -->
+            <div class="screen" data-screen="attendance">
+              <div class="scr-top"><div><h3>Attendance</h3><div class="sub">SATURDAY 13 JUN · LIVE</div></div><div class="scr-search">⌕ Filter by branch</div></div>
+              <div class="clockcard">
+                <div>
+                  <span class="branch-pill">◉ Khobar branch</span>
+                  <div class="bigtime" style="margin-top:10px">07:58<span style="font-size:18px;color:var(--muted)"> AM</span></div>
+                  <div class="cstat">● You're clocked in since 7:58 AM — 4h 12m on shift</div>
+                </div>
+                <button class="clockbtn">Clock out</button>
+              </div>
+              <div class="panel">
+                <table class="tbl">
+                  <thead><tr><th>Employee</th><th>Branch</th><th>Clock in</th><th>Clock out</th><th class="num">Hours</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td class="emp"><span class="av" style="background:#9c6b3f;width:24px;height:24px;font-size:9px">SA</span>Sara Al-Otaibi</td><td>Khobar</td><td class="num">7:58</td><td class="num">—</td><td class="num">4:12</td><td><span class="badge b-green">On time</span></td></tr>
+                    <tr><td class="emp"><span class="av" style="background:#5b7d8c;width:24px;height:24px;font-size:9px">MK</span>Majed Khan</td><td>Rayyan</td><td class="num">7:55</td><td class="num">—</td><td class="num">4:15</td><td><span class="badge b-green">On time</span></td></tr>
+                    <tr><td class="emp"><span class="av" style="background:#8c5b6f;width:24px;height:24px;font-size:9px">NF</span>Noura Faisal</td><td>Faisaliyah</td><td class="num">8:12</td><td class="num">—</td><td class="num">4:00</td><td><span class="badge b-amber">Late 12m</span></td></tr>
+                    <tr><td class="emp"><span class="av" style="background:#6b8c5b;width:24px;height:24px;font-size:9px">YR</span>Yousef Rashed</td><td>Roastery</td><td class="num">6:30</td><td class="num">2:30</td><td class="num">8:00</td><td><span class="badge b-slate">Done</span></td></tr>
+                    <tr><td class="emp"><span class="av" style="background:#7a6b8c;width:24px;height:24px;font-size:9px">LH</span>Lama Hassan</td><td>Khobar</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge b-terra">Absent</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- HIRING -->
+            <div class="screen" data-screen="hiring">
+              <div class="scr-top"><div><h3>Hiring pipeline</h3><div class="sub">FROM THE PUBLIC APPLY FORM · 8 OPEN</div></div><div class="scr-search">⌕ Search applicants</div></div>
+              <div class="kanban">
+                <div class="kcol">
+                  <div class="khead">New <span class="kcount">3</span></div>
+                  <div class="kcard"><div class="kn">Khalid M.</div><div class="kr">Barista · Khobar</div><div class="kmeta"><span class="cv">CV ▤</span> 2y exp · applied 1h ago</div></div>
+                  <div class="kcard"><div class="kn">Reem S.</div><div class="kr">Bakery · Rayyan</div><div class="kmeta"><span class="cv">CV ▤</span> 3y exp · applied today</div></div>
+                  <div class="kcard"><div class="kn">Faisal D.</div><div class="kr">Head barista · Any</div><div class="kmeta"><span class="cv">CV ▤</span> 5y exp · applied today</div></div>
+                </div>
+                <div class="kcol">
+                  <div class="khead">Reviewing <span class="kcount">2</span></div>
+                  <div class="kcard"><div class="kn">Hana A.</div><div class="kr">Barista · Faisaliyah</div><div class="kmeta"><span class="cv">CV ▤</span> reviewed by HR</div></div>
+                  <div class="kcard"><div class="kn">Omar T.</div><div class="kr">Roaster · Roastery</div><div class="kmeta"><span class="cv">CV ▤</span> 4y exp</div></div>
+                </div>
+                <div class="kcol">
+                  <div class="khead">Interview <span class="kcount">2</span></div>
+                  <div class="kcard"><div class="kn">Sultan R.</div><div class="kr">Barista · Khobar</div><div class="kmeta">📅 Sun 10:00 AM</div></div>
+                  <div class="kcard"><div class="kn">Maha K.</div><div class="kr">Cashier · Rayyan</div><div class="kmeta">📅 Mon 1:00 PM</div></div>
+                </div>
+                <div class="kcol">
+                  <div class="khead">Hired <span class="kcount">1</span></div>
+                  <div class="kcard" style="border-color:#cde3cd;background:var(--green-soft)"><div class="kn">Dana F.</div><div class="kr" style="color:var(--green-ink)">Barista · Khobar</div><div class="kmeta" style="color:var(--green-ink)">→ Convert to employee</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PAYROLL -->
+            <div class="screen" data-screen="payroll">
+              <div class="scr-top"><div><h3>Payroll — June 2026</h3><div class="sub">24 EMPLOYEES · DRAFT RUN</div></div><div class="scr-search" style="background:var(--espresso);color:#f7ecd9;border-color:var(--espresso)">⎙ Generate 24 slips</div></div>
+              <div class="panel">
+                <table class="tbl">
+                  <thead><tr><th>Employee</th><th>Role</th><th class="num">Base</th><th class="num">Holiday OT ×1.5</th><th class="num">Deductions</th><th class="num">Net (SAR)</th></tr></thead>
+                  <tbody>
+                    <tr><td class="emp"><span class="av" style="background:#9c6b3f;width:24px;height:24px;font-size:9px">SA</span>Sara Al-Otaibi</td><td>Barista</td><td class="num">4,000</td><td class="num"><span class="ot">+225</span></td><td class="num">0</td><td class="num"><b>4,225</b></td></tr>
+                    <tr><td class="emp"><span class="av" style="background:#5b7d8c;width:24px;height:24px;font-size:9px">MK</span>Majed Khan</td><td>Head barista</td><td class="num">6,500</td><td class="num"><span class="ot">+366</span></td><td class="num">0</td><td class="num"><b>6,866</b></td></tr>
+                    <tr><td class="emp"><span class="av" style="background:#8c5b6f;width:24px;height:24px;font-size:9px">NF</span>Noura Faisal</td><td>Barista</td><td class="num">4,000</td><td class="num">0</td><td class="num" style="color:var(--terra)">−800 adv.</td><td class="num"><b>3,200</b></td></tr>
+                    <tr><td class="emp"><span class="av" style="background:#6b8c5b;width:24px;height:24px;font-size:9px">YR</span>Yousef Rashed</td><td>Roaster</td><td class="num">5,500</td><td class="num"><span class="ot">+309</span></td><td class="num">0</td><td class="num"><b>5,809</b></td></tr>
+                  </tbody>
+                </table>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)">
+                  <span style="font-size:12px;color:var(--muted);font-family:var(--mono)">Holiday overtime pulled automatically from attendance</span>
+                  <span style="font-family:var(--serif);font-size:20px;color:var(--espresso);font-weight:600">Run total · SAR 184,200</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- COUNTS -->
+            <div class="screen" data-screen="counts">
+              <div class="scr-top"><div><h3>Daily count</h3><div class="sub">KHOBAR · SAT 13 JUN · CLOSING</div></div><div class="scr-search">◉ Khobar ▾</div></div>
+              <div class="panel">
+                <div class="countrow"><div><div class="cn">Whole milk</div><div class="par">par 24 · last counted 6h ago</div></div><span class="badge b-terra">Low</span><div class="qty">6</div></div>
+                <div class="countrow"><div><div class="cn">V60 house beans (250g)</div><div class="par">par 12</div></div><span class="badge b-green">OK</span><div class="qty">15</div></div>
+                <div class="countrow"><div><div class="cn">Oat milk</div><div class="par">par 18</div></div><span class="badge b-amber">Reorder soon</span><div class="qty">9</div></div>
+                <div class="countrow"><div><div class="cn">12oz paper cups</div><div class="par">par 500</div></div><span class="badge b-green">OK</span><div class="qty">740</div></div>
+                <div class="countrow"><div><div class="cn">Espresso blend (1kg)</div><div class="par">par 8</div></div><span class="badge b-green">OK</span><div class="qty">11</div></div>
+              </div>
+              <div style="display:flex;gap:9px;margin-top:13px;align-items:center">
+                <button class="clockbtn" style="background:var(--espresso);padding:11px 22px;font-size:13px">Save count</button>
+                <span style="font-size:12px;color:var(--muted);font-family:var(--mono)">2 items below par → auto-flagged to the purchasing list</span>
+              </div>
+            </div>
+
+            <!-- RECEIPTS -->
+            <div class="screen" data-screen="receipts">
+              <div class="scr-top"><div><h3>Receipts &amp; spend</h3><div class="sub">SCAN · CATEGORISE · REPORT</div></div><div class="scr-search">⌕ This month</div></div>
+              <div class="ocr-grid">
+                <div class="receipt">
+                  <div class="ai-chip"><span class="pulse"></span>Scanned with AI</div>
+                  <div class="rtitle">AL OTHAIM MARKET</div>
+                  <div class="rline"><span>Whole milk ×24</span><span>168.00</span></div>
+                  <div class="rline"><span>Oat milk ×12</span><span>132.00</span></div>
+                  <div class="rline"><span>Sugar 5kg</span><span>45.00</span></div>
+                  <div class="rline"><span>Napkins</span><span>28.00</span></div>
+                  <div class="rline" style="border-top:1px dashed #cbb79b;margin-top:6px;padding-top:6px"><span>Subtotal</span><span>373.00</span></div>
+                  <div class="rline"><span>VAT 15%</span><span>55.95</span></div>
+                  <div class="rline" style="font-weight:700;color:var(--roast)"><span>TOTAL</span><span>428.95</span></div>
+                </div>
+                <div class="panel extracted">
+                  <h4>Extracted automatically <span class="more">edit →</span></h4>
+                  <div class="xf"><span class="xl">Vendor</span><span class="xv">Al Othaim Market</span></div>
+                  <div class="xf"><span class="xl">Date</span><span class="xv">13 Jun 2026</span></div>
+                  <div class="xf"><span class="xl">Subtotal</span><span class="xv">SAR 373.00</span></div>
+                  <div class="xf"><span class="xl">VAT (15%)</span><span class="xv">SAR 55.95</span></div>
+                  <div class="xf"><span class="xl">Total</span><span class="xv" style="color:var(--roast)">SAR 428.95</span></div>
+                  <div class="xf"><span class="xl">Category</span><span class="badge b-blue">Dairy &amp; supplies</span></div>
+                  <div class="xf"><span class="xl">Branch</span><span class="badge b-slate">Khobar</span></div>
+                </div>
+              </div>
+              <div style="margin-top:13px;font-size:12px;color:var(--muted);font-family:var(--mono)">Snap a photo → fields fill themselves → it lands in the branch spend report.</div>
+            </div>
+
+          </div>
+        </div>
+        <div class="demo-progress"><i id="demoBar"></i></div>
+      </div>
+      <div class="demo-foot">Six of twenty-plus screens. Tap any item in the sidebar — or sit back and let the tour run.</div>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section class="sec" id="features" style="padding-top:30px">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">One platform, four jobs done</span>
+        <h2>Run the whole operation, not four disconnected tools</h2>
+        <p>Most cafés stitch together a spreadsheet, a WhatsApp group, a payroll guy and a shoebox of receipts. Bashari replaces all of it.</p>
+      </div>
+      <div class="pillars">
+        <div class="pillar rv d1"><span class="num">01</span>
+          <div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5"/><path d="M16 6.5a3 3 0 0 1 0 5M18 19c0-2-.8-3.6-2-4.6"/></svg></div>
+          <h3>People &amp; payroll</h3>
+          <p>From the first clock-in to the monthly slip. Attendance per branch, leave approvals, salary advances, warnings, documents — and payroll that pulls holiday overtime straight from the timesheet.</p>
+          <ul><li>Branch attendance</li><li>Leave &amp; approvals</li><li>Payroll runs</li><li>1.5× holiday OT</li><li>Advances</li><li>Warnings</li><li>Certificates</li></ul>
+        </div>
+        <div class="pillar rv d2"><span class="num">02</span>
+          <div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M8 6 6.5 4M13 12l-1.5-2M10 18l-1.5-2" stroke="currentColor"/></svg></div>
+          <h3>Daily operations</h3>
+          <p>Opening and closing checklists per branch and per role, daily &amp; weekly counts, and expiry checks that won't let a fridge slip. Every shift leaves a record.</p>
+          <ul><li>Branch checklists</li><li>Daily count</li><li>Weekly count</li><li>Expiry checklist</li><li>Task board</li><li>Roasting log</li></ul>
+        </div>
+        <div class="pillar rv d3"><span class="num">03</span>
+          <div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v8l9 4 9-4V7"/><path d="M12 11v8"/></svg></div>
+          <h3>Inventory &amp; spend</h3>
+          <p>Stock movements, suppliers and bakery purchasing in one ledger. Snap a receipt and AI reads the vendor, total and VAT for you — then it lands in the branch spend report.</p>
+          <ul><li>Stock &amp; movements</li><li>Suppliers</li><li>Bakery stock</li><li>Purchases</li><li>AI receipt scan</li><li>Spend reports</li></ul>
+        </div>
+        <div class="pillar rv d4"><span class="num">04</span>
+          <div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+          <h3>Hiring, end to end</h3>
+          <p>A public application page you share on Instagram or a QR code at the counter. Applications flow into a pipeline — review, interview, hire — and a hired applicant becomes an employee in one click.</p>
+          <ul><li>Public apply form</li><li>CV uploads</li><li>Pipeline stages</li><li>Bilingual</li><li>One-click hire</li><li>PDPL-aware</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURE GRID -->
+  <section class="sec" style="padding-top:10px">
+    <div class="wrap">
+      <div class="sec-head center rv"><span class="eyebrow" style="justify-content:center">Everything included</span><h2>Twenty-plus modules. One login.</h2></div>
+      <div class="fgrid rv d1">
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h4>Attendance</h4><p>Per-branch clock-in with late/absent flags and live hours.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><h4>Leave</h4><p>Requests, balances and approvals scoped by role.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg><h4>Payroll</h4><p>Runs, auto holiday OT and printable slips.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M5 9h14"/></svg><h4>Deductions</h4><p>One-off or recurring, applied automatically at run time.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16v10H4z"/><path d="M9 7V5h6v2"/></svg><h4>Advances</h4><p>Staff request, you approve, it nets off payroll.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg><h4>Warnings</h4><p>Disciplinary records with National-ID fallback.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="5"/><path d="M8 14l-1 7 5-3 5 3-1-7"/></svg><h4>Certificates</h4><p>Generate and issue employee certificates.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg><h4>Documents</h4><p>Iqama, contracts and IDs with expiry tracking.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 7-7"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg><h4>Checklists</h4><p>Per-branch, per-department opening &amp; closing routines.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v8l9 4 9-4V7"/></svg><h4>Inventory</h4><p>Stock, movements and suppliers across branches.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 11H6z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><h4>Bakery</h4><p>Stock, transfers and weekly purchasing.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M17 9h2a2.5 2.5 0 0 1 0 5h-2"/></svg><h4>Roasting log</h4><p>Track roast batches and green-bean usage.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg><h4>Receipts (AI)</h4><p>Photo → vendor, total &amp; VAT read by Claude Vision.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-7"/></svg><h4>Reports</h4><p>Spend, payroll and headcount, exportable.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg><h4>Analytics</h4><p>Admin dashboards across every branch.</p></div>
+        <div class="fcell"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2l6 6-9 9-6 1 1-6z"/></svg><h4>Maintenance</h4><p>Asset register and repair tickets.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COFFEE STRIP -->
+  <section class="sec" id="coffee" style="padding-top:20px">
+    <div class="wrap">
+      <div class="coffee rv">
+        <span class="eyebrow">Not generic HR — fluent in coffee</span>
+        <h2>It already speaks your language.</h2>
+        <p>Generic HR tools don't know what a head barista is, why a fridge needs an expiry check, or that beans get roasted before they're sold. Bashari was built inside a working roastery, so the vocabulary, the roles and the routines are already there on day one.</p>
+        <div class="coffee-terms">
+          <span>Branches</span><span>Baristas</span><span>Head baristas</span><span>Roasters</span><span>Bakery team</span><span>Daily count</span><span>Expiry check</span><span>Par levels</span><span>Holiday overtime</span><span>Green-bean usage</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIFFERENTIATORS -->
+  <section class="sec" style="padding-top:10px">
+    <div class="wrap">
+      <div class="sec-head center rv"><span class="eyebrow" style="justify-content:center">Why teams stick with it</span><h2>Built for the real floor, not the office</h2></div>
+      <div class="diffs">
+        <div class="diff rv d1"><div class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></div><h4>Works on any phone</h4><p>No installs, no app store. One link your baristas open on whatever device is at the counter.</p></div>
+        <div class="diff rv d2"><div class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><h4>Arabic &amp; English</h4><p>Fully bilingual with right-to-left layout. Your team works in the language they think in.</p></div>
+        <div class="diff rv d3"><div class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div><h4>Secure by design</h4><p>Every record is locked down by role at the database level — a barista sees their shift, an admin sees the group.</p></div>
+        <div class="diff rv d1"><div class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v13H3z"/><path d="M16 3h-8v4M8 12h.01M12 12h4"/></svg></div><h4>Role-based access</h4><p>Admin, operations, accounting, baristas, roasters, bakery — each role sees exactly what it needs.</p></div>
+        <div class="diff rv d2"><div class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></div><h4>Multi-branch native</h4><p>One, three or thirty branches. Roll up the whole group or drill into a single café.</p></div>
+        <div class="diff rv d3"><div class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></div><h4>Live in days</h4><p>Nothing to host or maintain. We brand it, load your branches and staff, and you're running.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="sec" id="pricing" style="padding-top:10px">
+    <div class="wrap">
+      <div class="sec-head center rv"><span class="eyebrow" style="justify-content:center">Simple, per-employee pricing</span><h2>One price. Every module.</h2><p>SAR 15 per employee, per month — every branch, every feature, fully bilingual. No tiers to decode, no setup fees.</p></div>
+      <div class="price-solo rv d1">
+        <div class="pcard feat psolo">
+          <div class="ribbon">All-inclusive</div>
+          <div class="tier">Per employee</div>
+          <div class="amt">SAR 15<small> / employee / mo</small></div>
+          <div class="pdesc">Billed monthly on active staff only — add or remove people as your roster changes.</div>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>All 20+ modules</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Every branch included</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Arabic &amp; English (RTL)</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Unlimited admins</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>AI receipt scanning</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Your branding</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Onboarding &amp; training</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Priority support</li>
+          </ul>
+          <a class="btn btn-primary" href="#contact" style="justify-content:center;width:100%">Book a demo</a>
+          <div class="psolo-note">Large group, roastery or franchise? Ask about volume pricing.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section class="finale" id="contact">
+    <div class="wrap">
+      <div class="finale-card rv">
+        <h2>Pour the first cup on Bashari.</h2>
+        <p>Bring us your branches and your team — we'll have a branded, working system in your hands within days. Book a walkthrough and we'll run your own shift on it, live.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="mailto:hello@bashari.co?subject=Bashari%20demo">Book a demo
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost" href="#demo">Replay the tour</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap foot-in">
+      <div>
+        <a class="brand" href="#top">
+          <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#cf9a57" stroke-width="2" stroke-linecap="round"><path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M17 9h2a2.5 2.5 0 0 1 0 5h-2"/></svg></span>
+          Bashari
+        </a>
+        <p class="note" style="margin-top:10px">The operating system for multi-branch coffee. Built inside a working roastery.</p>
+      </div>
+      <div style="text-align:right">
+        <div>hello@bashari.co</div>
+        <div style="font-size:12px;color:var(--faint);margin-top:6px">© 2026 Bashari · Operations for coffee, run right.</div>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  // sticky nav shadow
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 12));
+
+  // scroll reveals
+  const io = new IntersectionObserver((es) => {
+    es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.14 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+  // ---------- interactive product tour ----------
+  const SCREENS = [
+    { id:'dashboard',  label:'Dashboard',   path:'/#/dashboard',  dur:6000 },
+    { id:'attendance', label:'Attendance',  path:'/#/attendance', dur:5500 },
+    { id:'hiring',     label:'Hiring',      path:'/#/applications',dur:5500 },
+    { id:'payroll',    label:'Payroll',     path:'/#/payroll',    dur:6000 },
+    { id:'counts',     label:'Daily count', path:'/#/daily_count',dur:5500 },
+    { id:'receipts',   label:'Receipts',    path:'/#/receipts',   dur:6000 },
+  ];
+  const stage   = document.querySelector('.demo-stage');
+  const sideBtns= [...document.querySelectorAll('.sb-item[data-go]')];
+  const tabsWrap= document.getElementById('demoTabs');
+  const pathEl  = document.getElementById('demoPath');
+  const barEl   = document.getElementById('demoBar');
+  let idx = 0, timer = null, paused = false;
+
+  // build mobile tabs
+  tabsWrap.innerHTML = SCREENS.map((s,i)=>`<button data-i="${i}">${s.label}</button>`).join('');
+  const tabBtns = [...tabsWrap.children];
+
+  function show(i, user) {
+    idx = (i + SCREENS.length) % SCREENS.length;
+    const s = SCREENS[idx];
+    document.querySelectorAll('.screen').forEach(el => el.classList.toggle('active', el.dataset.screen === s.id));
+    sideBtns.forEach(b => b.classList.toggle('active', b.dataset.go === s.id));
+    tabBtns.forEach(b => b.classList.toggle('active', +b.dataset.i === idx));
+    pathEl.textContent = s.path;
+    // restart progress bar
+    barEl.classList.remove('run'); void barEl.offsetWidth;
+    barEl.style.setProperty('--dur', s.dur + 'ms');
+    if (!paused) barEl.classList.add('run');
+    clearTimeout(timer);
+    if (!paused) timer = setTimeout(() => show(idx + 1), s.dur);
+  }
+
+  sideBtns.forEach(b => b.addEventListener('click', () => { const i = SCREENS.findIndex(s => s.id === b.dataset.go); show(i, true); }));
+  tabBtns.forEach(b => b.addEventListener('click', () => show(+b.dataset.i, true)));
+
+  // pause on hover (desktop)
+  const win = document.querySelector('.demo-window');
+  win.addEventListener('mouseenter', () => { paused = true; clearTimeout(timer); barEl.classList.remove('run'); barEl.style.width = getComputedStyle(barEl).width; });
+  win.addEventListener('mouseleave', () => { paused = false; barEl.style.width=''; show(idx); });
+
+  // only auto-run once scrolled into view
+  let started = false;
+  const demoIO = new IntersectionObserver((es) => {
+    es.forEach(e => { if (e.isIntersecting && !started) { started = true; show(0); } });
+  }, { threshold: 0.3 });
+  demoIO.observe(document.getElementById('demo'));
+</script>
+</body>
+</html>
