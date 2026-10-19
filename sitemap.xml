@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://bashari.tech/</loc><lastmod>2026-10-19</lastmod></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://bashari.tech/</loc>
+    <lastmod>2026-10-19</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bashari.tech/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://bashari.tech/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bashari.tech/"/>
+  </url>
+  <url>
+    <loc>https://bashari.tech/ar/</loc>
+    <lastmod>2026-10-19</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bashari.tech/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://bashari.tech/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bashari.tech/"/>
+  </url>
 </urlset>
