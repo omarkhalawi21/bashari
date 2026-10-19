@@ -464,6 +464,9 @@ export const TEXT = {
   "A new till, a calmer back office, or that app idea you keep putting off. Book a walkthrough and we'll show it running on your own menu and your own team.":
     'كاشير جديد، أو إدارة أهدأ خلف الكواليس، أو فكرة التطبيق التي تؤجلها. احجز جولة وسنريك النظام يعمل على منيوك وفريقك.',
   'See all products': 'كل المنتجات',
+  'Chat on WhatsApp': 'تواصل عبر واتساب',
+  'WhatsApp us': 'راسلنا واتساب',
+  'Chat with us on WhatsApp': 'تواصل معنا عبر واتساب',
   'POS, HR &amp; operations and custom apps for multi-branch coffee. Built inside a working roastery.': 'نقاط بيع وموارد بشرية وعمليات وتطبيقات مخصصة للمقاهي متعددة الفروع. بُنيت داخل محمصة تعمل فعلاً.',
   '© 2026 Bashari · Software for coffee, run right.': '© 2026 Bashari · أنظمة تُدار بها القهوة كما يجب.',
 

@@ -435,6 +435,17 @@
   .dm-success p{font-size:14px;color:var(--muted);max-width:24em;margin:0 auto;line-height:1.55}
   body.dm-lock{overflow:hidden}
 
+  /* ---------- WhatsApp ---------- */
+  /* hidden until WA_NUMBER is set in the script (it adds .wa-on to <html>) */
+  .wa-only{display:none!important}
+  .wa-on .wa-only{display:inline-flex!important}
+  .wa-fab{position:fixed;bottom:22px;inset-inline-end:22px;z-index:60;align-items:center;gap:9px;background:#1f9e55;color:#fff;font-weight:700;font-size:14.5px;padding:13px 19px 13px 15px;border-radius:100px;box-shadow:0 14px 30px -10px rgba(20,90,50,.6);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+  .wa-fab:hover{transform:translateY(-2px);box-shadow:0 18px 36px -10px rgba(20,90,50,.65)}
+  .wa-fab svg{width:22px;height:22px;flex-shrink:0}
+  @media(max-width:600px){.wa-fab{padding:14px;bottom:16px;inset-inline-end:16px}.wa-fab span{display:none}}
+  body.dm-lock .wa-fab{display:none!important}
+  .btn-wa svg{width:18px;height:18px}
+
   /* ---------- hero: POS order chip ---------- */
   .hv-order{width:232px;inset-inline-start:-18px;bottom:18px;z-index:2;animation:floaty 7s ease-in-out infinite .4s;padding:14px 15px}
   @media(max-width:560px){.hv-order{display:none}}
@@ -586,7 +597,7 @@
   [dir=rtl] .serif-italic,[dir=rtl] .trust-badges span{font-style:normal}
   [dir=rtl] h1,[dir=rtl] h2,[dir=rtl] h3{line-height:1.3;font-weight:700}
   [dir=rtl] .hero h1{font-size:clamp(38px,5.4vw,66px)}
-  [dir=rtl] .btn svg{transform:scaleX(-1)}
+  [dir=rtl] .btn svg:not(.btn-wa svg){transform:scaleX(-1)}
   [dir=rtl] .nav-links{gap:26px}
   [dir=rtl] .dm-form input[type=email],[dir=rtl] .dm-form input[type=tel]{direction:ltr;text-align:right}
 
@@ -1166,6 +1177,7 @@
         <div class="hero-cta">
           <a class="btn btn-primary" href="mailto:hello@bashari.tech?subject=Bashari%20demo" data-demo>احجز عرضاً تجريبياً
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost btn-wa wa-only" href="#contact" data-wa target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3Z"/><path fill="currentColor" stroke="none" d="M8.8 8.2c.2-.4.5-.4.8-.4h.5c.2 0 .4.1.5.4l.7 1.7c.1.2 0 .5-.1.6l-.5.6c-.1.2-.1.4 0 .5.6 1 1.5 1.9 2.5 2.5.2.1.4.1.5 0l.6-.5c.2-.2.4-.2.6-.1l1.7.7c.3.1.4.3.4.5v.5c0 .3 0 .6-.4.8-.5.3-1.2.5-1.9.4-2.6-.4-5-2.8-5.4-5.4-.1-.7.1-1.4.5-1.9Z"/></svg>تواصل عبر واتساب</a>
           <a class="btn btn-ghost" href="#products">كل المنتجات</a>
         </div>
       </div>
@@ -1188,6 +1200,9 @@
       </div>
     </div>
   </footer>
+
+  <!-- WHATSAPP (floating) -->
+  <a class="wa-fab wa-only" href="#contact" data-wa target="_blank" rel="noopener" aria-label="تواصل معنا عبر واتساب"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3Z"/><path fill="currentColor" stroke="none" d="M8.8 8.2c.2-.4.5-.4.8-.4h.5c.2 0 .4.1.5.4l.7 1.7c.1.2 0 .5-.1.6l-.5.6c-.1.2-.1.4 0 .5.6 1 1.5 1.9 2.5 2.5.2.1.4.1.5 0l.6-.5c.2-.2.4-.2.6-.1l1.7.7c.3.1.4.3.4.5v.5c0 .3 0 .6-.4.8-.5.3-1.2.5-1.9.4-2.6-.4-5-2.8-5.4-5.4-.1-.7.1-1.4.5-1.9Z"/></svg><span>راسلنا واتساب</span></a>
 
   <!-- DEMO REQUEST MODAL -->
   <div class="demo-modal" id="demoModal" aria-hidden="true">
@@ -1246,6 +1261,7 @@
       sending: 'Sending…',
       submit: 'Get free demo',
       fail: 'Something went wrong — please email hello@bashari.tech and we\'ll set it up.',
+      waMsg: 'Hi Bashari, I\'d like to know more about your software for my coffee business.',
     },
     ar: {
       tabs: ['لوحة التحكم','الحضور','التوظيف','الرواتب','الجرد اليومي','الفواتير'],
@@ -1259,6 +1275,7 @@
       sending: 'جارٍ الإرسال…',
       submit: 'احجز العرض المجاني',
       fail: 'حدث خطأ ما. راسلنا على hello@bashari.tech وسنرتّب لك العرض.',
+      waMsg: 'السلام عليكم، أرغب في معرفة المزيد عن أنظمة Bashari لنشاطي في القهوة.',
     },
   }[LANG];
 
@@ -1464,6 +1481,26 @@
         if (ADS_SEND_TO) window.gtag('event', 'conversion', { send_to: ADS_SEND_TO });
       }
     } catch (e) { /* tracking must never break the form */ }
+  }
+
+  // ---------- WhatsApp ----------
+  // Business WhatsApp number: digits only, country code first, no + or spaces
+  // (e.g. '966501234567'). Leave empty to hide every WhatsApp button.
+  const WA_NUMBER = '966552056371';
+  if (WA_NUMBER) {
+    document.documentElement.classList.add('wa-on');
+    const waUrl = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(STR.waMsg);
+    document.querySelectorAll('a[data-wa]').forEach(a => {
+      a.href = waUrl;
+      a.addEventListener('click', () => {
+        // a tap is intent, not a confirmed lead, so it gets its own event name
+        try {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ event: 'whatsapp_click', language: LANG });
+          if (typeof window.gtag === 'function') window.gtag('event', 'whatsapp_click', { language: LANG });
+        } catch (e) {}
+      });
+    });
   }
 
   // Submission target — Web3Forms (https://web3forms.com). Submissions are
