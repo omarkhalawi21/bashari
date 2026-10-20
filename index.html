@@ -26,23 +26,23 @@
     try { saved = localStorage.getItem('bashari-lang'); } catch (e) {}
     if (q === 'ar' || q === 'en') { try { localStorage.setItem('bashari-lang', q); } catch (e) {} }
     var want = q || (page === 'en' ? saved : null);
-    if (want === 'ar' && page === 'en') location.replace('/ar/' + location.hash);
-    else if (want === 'en' && page === 'ar') location.replace('/' + location.hash);
+    var go = want === 'ar' && page === 'en' ? '/ar/' : want === 'en' && page === 'ar' ? '/' : null;
+    if (go) { window.__bashariRedirect = true; location.replace(go + location.hash); }
   })();
 </script>
-<!-- ===== Google tag (GA4 / Google Ads) — NOT ACTIVE YET =====
-     To turn on conversion tracking: replace BOTH "G-XXXXXXXXXX" below with your
-     GA4 Measurement ID (or an Ads ID like "AW-1234567890"), then remove the
-     comment markers around this block. trackLead() in the page script then fires
-     a "generate_lead" event on every successful demo request.
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<!-- Google tag (GA4 property "Bashari website", Measurement ID G-B2M47LD9YQ).
+     Skips the page_view when the language router above is about to redirect,
+     so a visitor sent from / to /ar/ is counted once. trackLead() and the
+     WhatsApp buttons in the page script send generate_lead / whatsapp_click. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-B2M47LD9YQ"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-XXXXXXXXXX');
+  if (!window.__bashariRedirect) {
+    gtag('js', new Date());
+    gtag('config', 'G-B2M47LD9YQ');
+  }
 </script>
-===== end Google tag ===== -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
